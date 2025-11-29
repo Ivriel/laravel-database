@@ -204,7 +204,7 @@ class QueryBuilderTest extends TestCase
         ]);
     }
 
-    public function testJoin()
+    public function testJoin()// gabungkan data
     {
         $this->insertProducts();
         $collection = DB::table("products")->join("categories","products.category_id","=","categories.id")
@@ -218,7 +218,7 @@ class QueryBuilderTest extends TestCase
     }
 
 
-    public function testOrdering()
+    public function testOrdering()// urutan produk
     {
         $this->insertProducts();
         $collection = DB::table("products")->whereNotNull("id")
@@ -230,4 +230,52 @@ class QueryBuilderTest extends TestCase
         });
     }
 
+    public function testPaging()
+    {
+        $this->insertCategories();
+
+        $collection = DB::table("categories")->skip(0)->take(2)->get(); // halaman satu ambil 2 data
+
+        self::assertCount(2,$collection);
+        $collection->each(function($item){
+            Log::info(json_encode($item));
+        });
+    }
+
+    public function insertManyCategories()
+    {
+        for($i=0; $i<100;$i++) {
+            DB::table("categories")->insert([
+                "id"=>"CATEGORY-$i",
+                "name"=> "Category $i",
+                "created_at" => "2025-11-29 10:10:10"
+            ]);
+        }
+    }
+
+    public function testChunk()// pemotongan data 
+    {
+        $this->insertManyCategories();
+        DB::table("categories")
+        ->orderBy("id")
+        ->chunk(10,function($categories){
+            self::assertNotNull($categories);
+            Log::info("Start Chunk");
+            $categories->each(function($category){
+                Log::info(json_encode($category));
+            });
+            Log::info("End Chunk");
+        });
+    }
+
+    public function testLazy()
+    {
+        $this->insertManyCategories();
+
+        $collection = DB::table("categories")->orderBy("id")->lazy(10)->take(3);
+        self::assertNotNull($collection);
+        $collection->each(function($item){
+            Log::info(json_encode($item));
+        });
+    }
 }
