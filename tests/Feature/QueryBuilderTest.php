@@ -18,7 +18,7 @@ class QueryBuilderTest extends TestCase
         parent::setUp();
         DB::delete("delete from categories");
     }
-    public function testInsert(): void
+    public function testInsert(): void // masukkan data
     {
         DB::table("categories")->insert([
             "id"=>"GADGET",
@@ -34,7 +34,7 @@ class QueryBuilderTest extends TestCase
         self::assertEquals(2,$result[0]->total);
     }
 
-    public function testSelect()
+    public function testSelect()// select data
     {
         $this->testInsert();
         $collection = DB::table("categories")->select(["id","name"])->get();
@@ -45,7 +45,7 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-    public function insertCategories()
+    public function insertCategories()// insert data
     {
         DB::table("categories")->insert([
             "id"=>"SMARTPHONE",
@@ -72,7 +72,7 @@ class QueryBuilderTest extends TestCase
         ]);
     }
 
-    public function testWhere()
+    public function testWhere()// where data
     {
         $this->insertCategories();
 
@@ -88,7 +88,7 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-    public function testWhereBetween()
+    public function testWhereBetween() // where data dari-sampai (between)
     {
         $this->insertCategories();
         $collection = DB::table("categories")
@@ -99,7 +99,7 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-    public function testWhereIn()
+    public function testWhereIn() // where data dalam (in) dengan id yang valuenya adalah...
     {
          $this->insertCategories();
         $collection = DB::table("categories")
@@ -110,7 +110,7 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-    public function testWhereNullMethod()
+    public function testWhereNullMethod() // where data dimana kolomnya adalah null
     {
          $this->insertCategories();
         $collection = DB::table("categories")
@@ -121,11 +121,56 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-     public function testWhereDate()
+     public function testWhereDate() // where data dimana kolomnya adalah date
     {
          $this->insertCategories();
         $collection = DB::table("categories")
         ->whereDate("created_at","2025-12-29")->get();
+        self::assertCount(1,$collection);
+        $collection->each(function($item){
+            Log::info(json_encode($item));
+        });
+    }
+
+    public function testUpdate() // update data dengan id yang valuenya adalah ...
+    {
+        $this->insertCategories();
+        DB::table("categories")->where("id","=","SMARTPHONE")->update([
+            "name"=> "Handphone"
+        ]);
+
+        $collection = DB::table("categories")->where("name","=","Handphone")->get();
+        self::assertCount(1,$collection);
+         $collection->each(function($item){
+            Log::info(json_encode($item));
+        });
+    }
+
+    public function testUpsert()// update data. jika data tidak ada maka insert data baru
+    {
+        $this->insertCategories();
+        DB::table("categories")->updateOrInsert([
+            "id"=>"VOUCHER"
+        ],[
+            "name"=>"Voucher",
+            "description"=>"Ticket And Voucher",
+            "created_at"=>"2025-12-29"
+        ]);
+
+        $collection = DB::table("categories")->where("id","=","VOUCHER")->get();
+        self::assertCount(1,$collection);
+         $collection->each(function($item){
+            Log::info(json_encode($item));
+        });
+    }
+
+    public function testIncrement()
+    {
+        DB::table("counters")
+        ->where("id","=","sample")
+        ->increment("counter",1);
+
+        $collection = DB::table("counters")->where("id","=","sample")->get();
         self::assertCount(1,$collection);
         $collection->each(function($item){
             Log::info(json_encode($item));
