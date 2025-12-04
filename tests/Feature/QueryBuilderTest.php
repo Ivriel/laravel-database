@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CounterSeeder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -18,6 +20,7 @@ class QueryBuilderTest extends TestCase
         parent::setUp();
         DB::delete("delete from products");
         DB::delete("delete from categories");
+        DB::delete("delete from counters");
     }
     public function testInsert(): void // masukkan data
     {
@@ -48,29 +51,7 @@ class QueryBuilderTest extends TestCase
 
     public function insertCategories()// insert data
     {
-        DB::table("categories")->insert([
-            "id"=>"SMARTPHONE",
-            "name"=> "Smartphone",
-            "created_at" => "2025-11-29 10:10:10"
-        ]);
-
-         DB::table("categories")->insert([
-            "id"=>"FOOD",
-            "name"=> "Food",
-            "created_at" => "2025-11-29 10:10:10"
-        ]);
-
-         DB::table("categories")->insert([
-            "id"=>"LAPTOP",
-            "name"=> "Laptop",
-            "created_at" => "2025-11-29 10:10:10"
-        ]);
-
-         DB::table("categories")->insert([
-            "id"=>"FASHION",
-            "name"=> "Fashion",
-            "created_at" => "2025-12-29 10:10:10"
-        ]);
+       $this->seed(CategorySeeder::class);
     }
 
     public function testWhere()// where data
@@ -165,14 +146,16 @@ class QueryBuilderTest extends TestCase
         });
     }
 
-    public function testIncrement()
+    public function testIncrement(): void
     {
+        $this->seed(CounterSeeder::class);
         DB::table("counters")
         ->where("id","=","sample")
         ->increment("counter",1);
 
         $collection = DB::table("counters")->where("id","=","sample")->get();
         self::assertCount(1,$collection);
+        self::assertEquals(1, $collection[0]->counter);
         $collection->each(function($item){
             Log::info(json_encode($item));
         });

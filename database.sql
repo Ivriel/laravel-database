@@ -30,3 +30,12 @@ create table products(
 )
 
 select * from products
+
+drop table products;
+drop table categories;
+drop table counters;
+
+
+select * from migrations;
+
+select * from categories;
